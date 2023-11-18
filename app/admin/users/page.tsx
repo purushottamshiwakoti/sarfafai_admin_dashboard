@@ -8,12 +8,17 @@ import { columns } from "./column";
 
 async function getData() {
   // Fetch data from your API here.
-  const data = await prisma.user.findMany({
-    include: {
-      location: true,
-    },
-  });
-  return data;
+  try {
+    const res = await fetch(`${process.env.NEXT_URL}/api/users`, {
+      cache: "no-store",
+    });
+    const repo = await res.json();
+    const { users } = await repo;
+    return users;
+  } catch (error) {
+    console.error("Error fetching data:", error);
+    return []; // Return an empty array or handle the error accordingly
+  }
 }
 const page = async () => {
   const data = await getData();
@@ -29,7 +34,7 @@ const page = async () => {
         </Button>
       </Link>
       <div className="mt-5">
-        <DataTable columns={columns} data={data} />
+        {data && <DataTable columns={columns} data={data} />}
       </div>
     </>
   );

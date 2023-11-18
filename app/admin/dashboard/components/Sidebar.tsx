@@ -12,9 +12,10 @@ const Sidebar = () => {
     { name: "Home", href: "/admin/dashboard" },
     { name: "Users", href: "/admin/users" },
     { name: "Locations", href: "/admin/locations" },
+    { name: "Edit Map", href: "/admin/map" },
   ];
   return (
-    <div className=" w-[13rem] h-[100vh] p-10 shadow-md space-y-4">
+    <div className=" w-[13rem]  p-10 shadow-md space-y-4">
       {links.map((link, index) => (
         <div key={index} className="">
           <Link
@@ -23,7 +24,9 @@ const Sidebar = () => {
               path.includes(link.href) ? "text-blue-500" : "text-black"
             }
           >
-            {link.name}
+            <Button className="w-full" variant="outline">
+              {link.name}
+            </Button>
           </Link>
         </div>
       ))}

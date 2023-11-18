@@ -26,7 +26,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Location } from "@prisma/client";
+import { Location, Role } from "@prisma/client";
 
 const formSchema = z.object({
   fullName: z.string().min(2, {
@@ -44,18 +44,37 @@ const formSchema = z.object({
   }),
 });
 
-const UserForm = ({ locations }: { locations: Location[] }) => {
+interface EditUserFormProps {
+  user: {
+    id: string;
+    fullName: string;
+    email: string;
+    password: string;
+    role: Role;
+    locationId: string;
+    createdAt: Date;
+    updatedAt: Date;
+  };
+  location: {
+    id: string;
+    name: string;
+    zipCode: string;
+    createdAt: Date;
+    updatedAt: Date;
+  }[];
+}
+const EditUserForm: React.FC<EditUserFormProps> = ({ location, user }) => {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   // 1. Define your form.
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      fullName: "",
-      email: "",
-      password: "",
-      role: "",
-      locationId: "",
+      fullName: user.fullName,
+      email: user.email,
+      password: user.password,
+      role: user.role,
+      locationId: user.locationId,
     },
   });
 
@@ -63,11 +82,10 @@ const UserForm = ({ locations }: { locations: Location[] }) => {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     // Do something with the form values.
     // ✅ This will be type-safe and validated.
-    console.log(values);
     const { fullName, email, password, role, locationId } = values;
     try {
       setLoading(true);
-      const response = await axios.post("/api/signup", {
+      const response = await axios.patch(`/api/signup/${user.id}`, {
         fullName,
         email,
         password,
@@ -75,9 +93,9 @@ const UserForm = ({ locations }: { locations: Location[] }) => {
         locationId,
       });
       toast.success(response.data.messsage);
+      router.refresh();
 
       router.push("/admin/users");
-      router.refresh();
     } catch (error) {
       toast.error("Something went wrong");
       console.log(error);
@@ -85,9 +103,38 @@ const UserForm = ({ locations }: { locations: Location[] }) => {
       setLoading(false);
     }
   }
+
+  const handleDelete = async () => {
+    try {
+      setLoading(true);
+      const response = await axios.delete(`/api/signup/${user.id}`);
+      toast.success(response.data.message);
+      router.refresh;
+      router.push("/admin/users");
+      router.refresh();
+    } catch (error) {
+      setLoading(true);
+
+      console.log(error);
+      toast.error("Something went wrong");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <>
       <div className="w-[50vw]">
+        <div>
+          <Button
+            className="ml-[43rem]"
+            variant={"destructive"}
+            disabled={loading}
+            onClick={() => handleDelete()}
+          >
+            Delete
+          </Button>
+        </div>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
             <FormField
@@ -176,7 +223,7 @@ const UserForm = ({ locations }: { locations: Location[] }) => {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {locations.map((item) => (
+                      {location.map((item) => (
                         <div key={item.id}>
                           <SelectItem value={item.id}>{item.name}</SelectItem>
                         </div>
@@ -198,4 +245,4 @@ const UserForm = ({ locations }: { locations: Location[] }) => {
   );
 };
 
-export default UserForm;
+export default EditUserForm;

@@ -9,7 +9,7 @@ export async function POST(req:NextRequest){
                     locationId
             }
         })
-        const message=`Hajur ko location ma fohor lina aako cha kripaya forhor lina aaunu hola `
+        const message=`Hajur ko location ma fohor lina aako cha kripaya forhor falna aaunu hola `
         const notification=await prisma.notifications.create({
             data:{
                 message: message,
@@ -36,4 +36,5 @@ export async function POST(req:NextRequest){
     return NextResponse.json({ e: error }, { status: 500 });
         
     }
-}
+};
+

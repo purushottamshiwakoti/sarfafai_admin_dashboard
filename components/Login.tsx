@@ -23,15 +23,6 @@ const Login = () => {
   const handleLogin = async () => {
     try {
       setLoading(true);
-      // const response = await axios.post("/api/signin", {
-      //   email: input.email,
-      //   password: input.password,
-      // });
-      // console.log(response.data.findUser);
-      // if (response.status === 200 && response.data.findUser.role === "ADMIN") {
-      //   router.push("/dashboard");
-      // }
-      // toast.success(response.data.message);
       if (
         input.email === "superadmin@gmail.com" &&
         input.password === "superadmin"
@@ -39,8 +30,17 @@ const Login = () => {
         // cookies().set("sarsafai", "sarsafaikocookie");
         setCookie("sarsafai", "sarsafaikocookie");
         router.push("/admin/dashboard");
+        toast.success("Successfully logged in");
       }
-      toast.success("Successfully logged in");
+      const response = await axios.post("/api/signin", {
+        email: input.email,
+        password: input.password,
+      });
+      console.log(response.data.findUser);
+      if (response.status === 200 && response.data.findUser.role === "ADMIN") {
+        router.push("/admin/dashboard");
+        toast.success(response.data.message);
+      }
     } catch (error) {
       console.log(error);
       toast.error("Something went wrong");
@@ -74,7 +74,6 @@ const Login = () => {
           Login
         </Button>
       </div>
-      <Toaster />
     </div>
   );
 };

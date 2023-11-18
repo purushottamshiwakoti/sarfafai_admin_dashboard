@@ -16,7 +16,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { useState } from "react";
+import React, { useState } from "react";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 
@@ -29,15 +29,26 @@ const formSchema = z.object({
   }),
 });
 
-const LocationForm = () => {
+interface LocationEditFormProps {
+  location: {
+    id: string;
+    name: string;
+    zipCode: string;
+    createdAt: Date;
+    updatedAt: Date;
+  };
+}
+
+const LocationEditForm: React.FC<LocationEditFormProps> = ({ location }) => {
+  console.log(location);
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   // 1. Define your form.
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: "",
-      zipCode: "",
+      name: location.name,
+      zipCode: location.zipCode,
     },
   });
 
@@ -45,11 +56,13 @@ const LocationForm = () => {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     // Do something with the form values.
     // ✅ This will be type-safe and validated.
-    console.log(values);
     const { name, zipCode } = values;
     try {
       setLoading(true);
-      const response = await axios.post("/api/location", { name, zipCode });
+      const response = await axios.patch(`/api/location/${location.id}`, {
+        name,
+        zipCode,
+      });
       toast.success(response.data.message);
       router.push("/admin/locations");
       router.refresh();
@@ -60,9 +73,36 @@ const LocationForm = () => {
       setLoading(false);
     }
   }
+  const handleDelete = async () => {
+    try {
+      setLoading(true);
+      const response = await axios.delete(`/api/location/${location.id}`);
+      toast.success(response.data.message);
+      router.refresh;
+      router.push("/admin/locations");
+      router.refresh();
+    } catch (error) {
+      setLoading(true);
+
+      console.log(error);
+      toast.error("Something went wrong");
+    } finally {
+      setLoading(false);
+    }
+  };
   return (
     <>
       <div className="w-[50vw]">
+        <div>
+          <Button
+            className="ml-[43rem]"
+            variant={"destructive"}
+            disabled={loading}
+            onClick={() => handleDelete()}
+          >
+            Delete
+          </Button>
+        </div>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
             <FormField
@@ -93,9 +133,11 @@ const LocationForm = () => {
                 </FormItem>
               )}
             />
-            <Button type="submit" className="w-full" disabled={loading}>
-              Edit
-            </Button>
+            <div className="flex ">
+              <Button type="submit" className="w-full" disabled={loading}>
+                Edit
+              </Button>
+            </div>
           </form>
         </Form>
       </div>
@@ -103,4 +145,4 @@ const LocationForm = () => {
   );
 };
 
-export default LocationForm;
+export default LocationEditForm;
