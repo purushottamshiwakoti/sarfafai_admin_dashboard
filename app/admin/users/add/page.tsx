@@ -6,8 +6,17 @@ import UserForm from "./UserForm";
 import prisma from "@/libs/prismadb";
 
 const fetchLocations = async () => {
-  const locations = await prisma.location.findMany();
-  return locations;
+  try {
+    const res = await fetch(`${process.env.NEXT_URL}/api/location`, {
+      cache: "no-store",
+    });
+    const repo = await res.json();
+    const { locations } = await repo;
+    return locations;
+  } catch (error) {
+    console.error("Error fetching data:", error);
+    return []; // Return an empty array or handle the error accordingly
+  }
 };
 
 const page = async () => {
